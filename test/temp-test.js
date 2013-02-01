@@ -53,6 +53,25 @@ temp.open('bar', function(err, info) {
   util.log("open " + openPath);
 });
 
+var buffer = new Buffer(12);
+buffer.write("Sup, World!!", "utf-8");
+temp.write('prefy', buffer, function (err, writePath) {
+  assert.equal('string', typeof(writePath), 'temp.write did not invoke callback with a file path');
+
+  fs.exists(writePath, function (exists) {
+    assert.ok(exists, 'temp.write did not create a file');
+
+    fs.readFile(writePath, function (err, data) {
+      assert.equal("Sup, World!!", data.toString(), 'temp.write did not write the correct data');
+
+      temp.cleanup();
+      fs.exists(writePath, function (exists) {
+        assert.ok(!exists, 'temp.cleanup did not remove the file');
+      });
+    });
+  });
+  util.log("write " + writePath);
+});
 
 var stream = temp.createWriteStream('baz');
 assert.ok(stream instanceof fs.WriteStream, "temp.createWriteStream did not invoke the callback with the err and stream object");
